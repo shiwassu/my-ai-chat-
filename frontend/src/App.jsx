@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Layout, Input, Button, List, Avatar, Switch, Space } from 'antd'; // 1. 引入 Switch 和 Space
+import { Layout, Input, Button, List, Avatar, Switch, Space } from 'antd';
 import { UserOutlined, RobotOutlined } from '@ant-design/icons';
 
-const BACKEND_URL = 'https://8000-shiwassu-myaichat-djmkbosgy0b.ws-us121.gitpod.io/chat';
-
+const BACKEND_URL = '在这里粘贴您复制的8000端口地址/chat';
 
 const { Sider, Content } = Layout;
 
@@ -13,7 +12,7 @@ const App = () => {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [language, setLanguage] = useState('zh'); // 2. 新增语言状态，'zh' 代表中文
+  const [language, setLanguage] = useState('zh');
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -34,7 +33,6 @@ const App = () => {
     setIsLoading(true);
 
     try {
-      // 3. 在请求体中加入 language 字段
       const response = await fetch(BACKEND_URL, {
         method: 'POST',
         headers: {
@@ -60,12 +58,12 @@ const App = () => {
     }
   };
 
-  // 4. 处理开关变化的函数
   const handleLanguageChange = (checked) => {
     setLanguage(checked ? 'en' : 'zh');
   };
 
   return (
+    // ... (这部分代码和之前一样)
     <Layout style={{ minHeight: '100vh' }}>
       <Sider width={260} style={{ background: '#fff', borderRight: '1px solid #f0f0f0' }}>
         <div style={{ padding: '16px', fontWeight: 'bold' }}>会话列表</div>
@@ -87,7 +85,6 @@ const App = () => {
             />
             <div ref={messagesEndRef} />
           </div>
-          {/* 5. 在输入区域增加 Switch 开关 */}
           <div style={{ padding: '16px', background: '#fff', borderTop: '1px solid #f0f0f0' }}>
             <div style={{ display: 'flex' }}>
               <Input
