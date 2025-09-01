@@ -3,33 +3,40 @@ import requests
 from fastapi import FastAPI
 from pydantic import BaseModel
 from dotenv import load_dotenv
-from fastapi.middleware.cors import CORSMiddleware # 1. 导入CORS中间件
+from fastapi.middleware.cors import CORSMiddleware
+
+# ... (上面的 import 语句)
 
 load_dotenv()
-
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 GITPOD_WORKSPACE_URL = os.getenv("GITPOD_WORKSPACE_URL", "http://localhost")
 
+# 1. 修改 UserRequest，增加一个可选的 language 字段
 class UserRequest(BaseModel):
     message: str
+    language: str = 'zh' # 默认语言为中文 'zh'
 
 app = FastAPI()
 
-# 2. 配置CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # 允许所有来源的请求
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"], # 允许所有HTTP方法
-    allow_headers=["*"], # 允许所有HTTP头
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-
 
 @app.post("/chat")
 def create_chat(request: UserRequest):
-    # ... (这部分代码和之前一样，无需改动)
     if not OPENROUTER_API_KEY:
         return {"response": "错误：找不到 OPENROUTER_API_KEY，请检查 .env 文件。"}
+
+    # 2. 根据 language 字段，动态构建指令
+    prompt_content = ""
+    if request.language == 'en':
+        prompt_content = f"Please respond in English: {request.message}"
+    else: # 默认中文
+        prompt_content = f"请只用简体中文回答: {request.message}"
 
     try:
         headers = {
@@ -43,7 +50,7 @@ def create_chat(request: UserRequest):
             headers=headers,
             json={
                 "model": "mistralai/mistral-7b-instruct",
-                "messages": [{"role": "user", "content": request.message}]
+                "messages": [{"role": "user", "content": prompt_content}] # 使用我们新构建的指令
             }
         )
         api_response.raise_for_status()

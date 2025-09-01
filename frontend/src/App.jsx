@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Layout, Input, Button, List, Avatar } from 'antd';
+import { Layout, Input, Button, List, Avatar, Switch, Space } from 'antd'; // 1. 引入 Switch 和 Space
 import { UserOutlined, RobotOutlined } from '@ant-design/icons';
 
-// --- 重要：请将下面的地址替换为您刚刚复制的后端地址 ---
-// --- 记得在地址最后加上 /chat ---
 const BACKEND_URL = 'https://8000-shiwassu-myaichat-djmkbosgy0b.ws-us121.gitpod.io/chat';
 
 
@@ -15,9 +13,9 @@ const App = () => {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef(null); // 用于自动滚动
+  const [language, setLanguage] = useState('zh'); // 2. 新增语言状态，'zh' 代表中文
+  const messagesEndRef = useRef(null);
 
-  // 自动滚动到最新消息
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -31,17 +29,18 @@ const App = () => {
 
     const userMessage = { id: Date.now(), sender: 'user', text: inputValue };
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = inputValue;
     setInputValue('');
     setIsLoading(true);
 
     try {
-      // --- 修改：调用我们的后端 API ---
+      // 3. 在请求体中加入 language 字段
       const response = await fetch(BACKEND_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: inputValue }),
+        body: JSON.stringify({ message: currentInput, language: language }),
       });
 
       if (!response.ok) {
@@ -59,6 +58,11 @@ const App = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // 4. 处理开关变化的函数
+  const handleLanguageChange = (checked) => {
+    setLanguage(checked ? 'en' : 'zh');
   };
 
   return (
@@ -83,18 +87,27 @@ const App = () => {
             />
             <div ref={messagesEndRef} />
           </div>
-          <div style={{ display: 'flex', padding: '16px', background: '#fff', borderTop: '1px solid #f0f0f0' }}>
-            <Input
-              size="large"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onPressEnter={handleSend}
-              placeholder="请输入您的问题..."
-              disabled={isLoading}
-            />
-            <Button size="large" type="primary" onClick={handleSend} style={{ marginLeft: '8px' }} loading={isLoading}>
-              发送
-            </Button>
+          {/* 5. 在输入区域增加 Switch 开关 */}
+          <div style={{ padding: '16px', background: '#fff', borderTop: '1px solid #f0f0f0' }}>
+            <div style={{ display: 'flex' }}>
+              <Input
+                size="large"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onPressEnter={handleSend}
+                placeholder="请输入您的问题..."
+                disabled={isLoading}
+              />
+              <Button size="large" type="primary" onClick={handleSend} style={{ marginLeft: '8px' }} loading={isLoading}>
+                发送
+              </Button>
+            </div>
+            <div style={{ marginTop: '8px' }}>
+              <Space>
+                <Switch onChange={handleLanguageChange} />
+                <span>用英文回答</span>
+              </Space>
+            </div>
           </div>
         </Content>
       </Layout>
